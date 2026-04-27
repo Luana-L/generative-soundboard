@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generative Soundboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>generative soundboard</h1>
+      <div class="transport">
+        <button id="start" class="primary">start</button>
+        <label class="bpm">
+          bpm
+          <input id="bpm" type="number" min="40" max="220" value="110" />
+        </label>
+        <label class="master">
+          master
+          <input id="master" type="range" min="0" max="1" step="0.01" value="0.8" />
+        </label>
+      </div>
+    </header>
+
+    <main class="board">
+      <!-- Rhythm -->
+      <section class="layer" data-layer="rhythm">
+        <header class="layer-head">
+          <h2>rhythm</h2>
+          <button class="toggle" data-target="rhythm" aria-pressed="false">off</button>
+        </header>
+        <div class="controls">
+          <label>
+            volume
+            <input class="vol" type="range" min="0" max="1" step="0.01" value="0.7" />
+          </label>
+          <fieldset class="euclid">
+            <legend>euclidean (steps / pulses)</legend>
+            <div class="track">
+              <span class="tname">kick</span>
+              <input class="steps" data-voice="kick" type="number" min="2" max="32" value="16" />
+              <input class="pulses" data-voice="kick" type="number" min="0" max="32" value="4" />
+              <span class="pattern" data-voice="kick"></span>
+            </div>
+            <div class="track">
+              <span class="tname">snare</span>
+              <input class="steps" data-voice="snare" type="number" min="2" max="32" value="16" />
+              <input class="pulses" data-voice="snare" type="number" min="0" max="32" value="2" />
+              <span class="pattern" data-voice="snare"></span>
+            </div>
+            <div class="track">
+              <span class="tname">hat</span>
+              <input class="steps" data-voice="hat" type="number" min="2" max="32" value="16" />
+              <input class="pulses" data-voice="hat" type="number" min="0" max="32" value="8" />
+              <span class="pattern" data-voice="hat"></span>
+            </div>
+          </fieldset>
+        </div>
+      </section>
+
+      <!-- Melody -->
+      <section class="layer" data-layer="melody">
+        <header class="layer-head">
+          <h2>melody</h2>
+          <button class="toggle" data-target="melody" aria-pressed="false">off</button>
+        </header>
+        <div class="controls">
+          <label>
+            volume
+            <input class="vol" type="range" min="0" max="1" step="0.01" value="0.5" />
+          </label>
+          <label>
+            pitch class set
+            <select id="pcset">
+              <option value="0,2,4,7,9" selected>pentatonic</option>
+              <option value="0,2,4,5,7,9,11">diatonic</option>
+              <option value="0,1,3,5,6,8,10">octatonic</option>
+              <option value="0,3,7">minor triad</option>
+              <option value="0,1,4,6">tetrachord</option>
+              <option value="0,1,5,6">all-interval</option>
+            </select>
+          </label>
+          <label>
+            transpose Tn
+            <input id="tn" type="range" min="0" max="11" step="1" value="0" />
+            <span id="tn-val">0</span>
+          </label>
+          <label class="check">
+            <input id="invert" type="checkbox" />
+            invert
+          </label>
+          <label>
+            density
+            <input id="density" type="range" min="0.1" max="1" step="0.05" value="0.6" />
+          </label>
+          <label>
+            FM index
+            <input id="fmindex" type="range" min="0" max="800" step="1" value="220" />
+          </label>
+          <label>
+            FM ratio
+            <input id="fmratio" type="range" min="0.25" max="6" step="0.25" value="2" />
+          </label>
+        </div>
+      </section>
+
+      <!-- Texture -->
+      <section class="layer" data-layer="texture">
+        <header class="layer-head">
+          <h2>texture</h2>
+          <button class="toggle" data-target="texture" aria-pressed="false">off</button>
+        </header>
+        <div class="controls">
+          <label>
+            volume
+            <input class="vol" type="range" min="0" max="1" step="0.01" value="0.4" />
+          </label>
+          <label>
+            base note
+            <input id="tex-base" type="number" min="24" max="72" value="40" />
+          </label>
+          <label>
+            detune spread
+            <input id="tex-spread" type="range" min="0" max="40" step="0.5" value="12" />
+          </label>
+          <label>
+            filter sweep (hz)
+            <input id="tex-cutoff" type="range" min="120" max="6000" step="10" value="900" />
+          </label>
+          <label>
+            LFO rate
+            <input id="tex-lforate" type="range" min="0.02" max="1.5" step="0.01" value="0.15" />
+          </label>
+          <label>
+            LFO depth
+            <input id="tex-lfodepth" type="range" min="0" max="3000" step="10" value="1200" />
+          </label>
+        </div>
+      </section>
+    </main>
+
+    <footer class="status">
+      <span id="status-text">click <em>start</em> to unlock audio</span>
+      <span class="beat" id="beat-led"></span>
+    </footer>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
