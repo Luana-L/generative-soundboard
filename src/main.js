@@ -17,6 +17,7 @@ const layerMap = { rhythm, melody, texture };
 
 // ---- Transport ----
 const startBtn = $("#start");
+const updateMusicBtn = $("#update-music");
 const statusText = $("#status-text");
 const beatLed = $("#beat-led");
 
@@ -44,13 +45,13 @@ function stopEverything() {
   statusText.innerHTML = "stopped";
 }
 
-function setToggle(target, on) {
+function setToggle(target, on, { apply = true } = {}) {
   const btn = document.querySelector(`.toggle[data-target="${target}"]`);
   if (!btn) return;
   btn.setAttribute("aria-pressed", String(on));
   btn.textContent = on ? "on" : "off";
   btn.closest(".layer").classList.toggle("active", on);
-  layerMap[target].setEnabled(on);
+  if (apply) layerMap[target].setEnabled(on);
 }
 
 function allTogglesOff() {
@@ -69,9 +70,6 @@ startBtn.addEventListener("click", () => {
     stopEverything();
   }
 });
-
-$("#bpm").addEventListener("input", (e) => engine.setBpm(parseFloat(e.target.value)));
-$("#master").addEventListener("input", (e) => engine.setMasterGain(parseFloat(e.target.value)));
 
 // Use the engine's tick stream to flash beat LED on every quarter note.
 let ledStep = 0;
@@ -99,19 +97,14 @@ $$(".toggle").forEach((btn) => {
   btn.addEventListener("click", () => {
     const target = btn.dataset.target;
     const next = btn.getAttribute("aria-pressed") !== "true";
-    if (next && !engine.running) startEverything();
-    setToggle(target, next);
-    if (!next && engine.running && allTogglesOff()) stopEverything();
+    setToggle(target, next, { apply: false });
+    statusText.innerHTML = engine.running
+      ? "changes pending — click update music"
+      : "changes pending — press start, then update music";
   });
 });
 
-// Per-layer volume sliders.
-$$(".layer").forEach((el) => {
-  const which = el.dataset.layer;
-  const layer = layerMap[which];
-  const vol = el.querySelector(".vol");
-  if (vol) vol.addEventListener("input", (e) => layer.setVolume(parseFloat(e.target.value)));
-});
+// Per-layer volume sliders are staged until "update music".
 
 // ---- Rhythm controls ----
 function renderPattern(voice) {
@@ -119,16 +112,6 @@ function renderPattern(voice) {
   if (!el) return;
   el.innerHTML = formatPattern(rhythm.tracks[voice].pattern);
 }
-
-$$(".euclid .steps, .euclid .pulses").forEach((input) => {
-  input.addEventListener("input", () => {
-    const voice = input.dataset.voice;
-    const steps  = parseInt(document.querySelector(`.steps[data-voice="${voice}"]`).value, 10);
-    const pulses = parseInt(document.querySelector(`.pulses[data-voice="${voice}"]`).value, 10);
-    rhythm.setTrack(voice, steps, pulses);
-    renderPattern(voice);
-  });
-});
 
 // Initial pattern render.
 for (const v of ["kick", "snare", "hat"]) renderPattern(v);
@@ -139,23 +122,56 @@ const tnRange  = $("#tn");
 const tnVal    = $("#tn-val");
 const invertCb = $("#invert");
 
-pcsetSel.addEventListener("change", () => {
-  const set = pcsetSel.value.split(",").map(Number);
-  melody.setPcset(set);
-});
 tnRange.addEventListener("input", () => {
   const n = parseInt(tnRange.value, 10);
   tnVal.textContent = n;
-  melody.setTn(n);
 });
-invertCb.addEventListener("change", () => melody.setInvert(invertCb.checked));
-$("#density").addEventListener("input", (e) => melody.setDensity(parseFloat(e.target.value)));
-$("#fmindex").addEventListener("input", (e) => melody.setFmIndex(parseFloat(e.target.value)));
-$("#fmratio").addEventListener("input", (e) => melody.setFmRatio(parseFloat(e.target.value)));
 
-// ---- Texture controls ----
-$("#tex-base").addEventListener("input",     (e) => texture.setBaseMidi(parseInt(e.target.value, 10)));
-$("#tex-spread").addEventListener("input",   (e) => texture.setSpread(parseFloat(e.target.value)));
-$("#tex-cutoff").addEventListener("input",   (e) => texture.setCutoff(parseFloat(e.target.value)));
-$("#tex-lforate").addEventListener("input",  (e) => texture.setLfoRate(parseFloat(e.target.value)));
-$("#tex-lfodepth").addEventListener("input", (e) => texture.setLfoDepth(parseFloat(e.target.value)));
+function applyMusicSettings() {
+  engine.setBpm(parseFloat($("#bpm").value));
+  engine.setMasterGain(parseFloat($("#master").value));
+
+  $$(".layer").forEach((el) => {
+    const which = el.dataset.layer;
+    const layer = layerMap[which];
+    const vol = el.querySelector(".vol");
+    if (vol) layer.setVolume(parseFloat(vol.value));
+  });
+
+  for (const target of LAYER_NAMES) {
+    const btn = document.querySelector(`.toggle[data-target="${target}"]`);
+    const on = btn?.getAttribute("aria-pressed") === "true";
+    layerMap[target].setEnabled(on);
+  }
+
+  for (const voice of ["kick", "snare", "hat"]) {
+    const steps = parseInt(document.querySelector(`.steps[data-voice="${voice}"]`).value, 10);
+    const pulses = parseInt(document.querySelector(`.pulses[data-voice="${voice}"]`).value, 10);
+    rhythm.setTrack(voice, steps, pulses);
+    renderPattern(voice);
+  }
+
+  melody.setPcset(pcsetSel.value.split(",").map(Number));
+  melody.setTn(parseInt(tnRange.value, 10));
+  melody.setInvert(invertCb.checked);
+  melody.setDensity(parseFloat($("#density").value));
+  melody.setFmIndex(parseFloat($("#fmindex").value));
+  melody.setFmRatio(parseFloat($("#fmratio").value));
+
+  texture.setBaseMidi(parseInt($("#tex-base").value, 10));
+  texture.setSpread(parseFloat($("#tex-spread").value));
+  texture.setCutoff(parseFloat($("#tex-cutoff").value));
+  texture.setLfoRate(parseFloat($("#tex-lforate").value));
+  texture.setLfoDepth(parseFloat($("#tex-lfodepth").value));
+
+  if (engine.running && allTogglesOff()) stopEverything();
+}
+
+updateMusicBtn.addEventListener("click", () => {
+  applyMusicSettings();
+  statusText.innerHTML = engine.running
+    ? "music updated — parameters applied"
+    : "settings updated — press start to hear changes";
+});
+
+applyMusicSettings();

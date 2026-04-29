@@ -110,16 +110,19 @@ export class TextureLayer {
 
   setCutoff(hz) {
     this.cutoff = hz;
+    if (!this.filter) return;
     this.filter.frequency.setTargetAtTime(hz, this.engine.ctx.currentTime, 0.05);
   }
 
   setLfoRate(hz) {
     this.lfoRate = hz;
+    if (!this.lfo) return;
     this.lfo.frequency.setTargetAtTime(hz, this.engine.ctx.currentTime, 0.05);
   }
 
   setLfoDepth(hz) {
     this.lfoDepthHz = hz;
+    if (!this.lfoDepth) return;
     this.lfoDepth.gain.setTargetAtTime(hz, this.engine.ctx.currentTime, 0.05);
   }
 }
