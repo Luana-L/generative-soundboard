@@ -4,6 +4,19 @@ const LOOKAHEAD_MS = 25;        // scheduler wakeup interval
 const SCHEDULE_AHEAD_S = 0.1;   // how far ahead to queue events
 const STEPS_PER_BEAT = 4;       // 16th-note resolution
 
+function makeReverbIR(ctx, seconds = 2.4) {
+  const sr = ctx.sampleRate;
+  const len = Math.floor(sr * seconds);
+  const buf = ctx.createBuffer(2, len, sr);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buf.getChannelData(ch);
+    for (let i = 0; i < len; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+    }
+  }
+  return buf;
+}
+
 export class AudioEngine {
   constructor() {
     this.ctx = null;
@@ -24,6 +37,15 @@ export class AudioEngine {
     this.master = this.ctx.createGain();
     this.master.gain.value = 0.8;
     this.master.connect(this.ctx.destination);
+
+    this.fxInput = this.ctx.createGain();
+    this.reverb = this.ctx.createConvolver();
+    this.reverb.buffer = makeReverbIR(this.ctx, 2.4);
+    this.reverbOutputGain = this.ctx.createGain();
+    this.reverbOutputGain.gain.value = 0.7;
+    this.fxInput.connect(this.reverb);
+    this.reverb.connect(this.reverbOutputGain);
+    this.reverbOutputGain.connect(this.master);
   }
 
   setMasterGain(value) {

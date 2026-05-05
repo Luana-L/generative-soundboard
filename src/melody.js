@@ -64,7 +64,16 @@ export class MelodyLayer {
     this.gain = ctx.createGain();
     this.gain.gain.value = 0;
     this.gain.connect(this.engine.master);
+    this.send = ctx.createGain();
+    this.send.gain.value = 0;
+    this.gain.connect(this.send);
+    this.send.connect(this.engine.fxInput);
     this.engine.onTick((step, time) => this.tick(step, time));
+  }
+
+  setSend(v) {
+    if (!this.send) return;
+    this.send.gain.setTargetAtTime(v, this.engine.ctx.currentTime, 0.05);
   }
 
   setEnabled(on) {
@@ -150,10 +159,7 @@ export class MelodyLayer {
     if (this.mode === "ca") {
       const N = this.caState.length;
       const pos = step % N;
-      // At the top of each bar, evolve the CA one generation.
       if (pos === 0) this.stepCa();
-      // Fire chords on quarter-note boundaries: read 4 cells at a time and
-      // sound every alive cell as a simultaneous note from the pool.
       if (step % 4 !== 0) return;
 
       const pool = this.pitchPool;

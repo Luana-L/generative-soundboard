@@ -135,7 +135,16 @@ export class RhythmLayer {
     this.gain = ctx.createGain();
     this.gain.gain.value = 0;
     this.gain.connect(this.engine.master);
+    this.send = ctx.createGain();
+    this.send.gain.value = 0;
+    this.gain.connect(this.send);
+    this.send.connect(this.engine.fxInput);
     this.engine.onTick((step, time) => this.tick(step, time));
+  }
+
+  setSend(v) {
+    if (!this.send) return;
+    this.send.gain.setTargetAtTime(v, this.engine.ctx.currentTime, 0.05);
   }
 
   setEnabled(on) {

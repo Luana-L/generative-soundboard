@@ -33,7 +33,7 @@ src/main.js         DOM wiring
 
 ## Features
 
-— FM synthesis
+- FM synthesis
 - Per-layer `GainNode` routing into a master `GainNode` into `destination`.
 - `AudioParam` ADSR envelopes via `setTargetAtTime` for smooth volume / cutoff / detune ramps.
 - **Pitch class set theory** in `melody.js` — transposition and inversion operations on pitch class sets

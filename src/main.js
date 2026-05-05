@@ -185,6 +185,8 @@ function applyMusicSettings() {
     const layer = layerMap[which];
     const vol = el.querySelector(".vol");
     if (vol) layer.setVolume(parseFloat(vol.value));
+    const send = el.querySelector(".send");
+    if (send && layer.setSend) layer.setSend(parseFloat(send.value));
   });
 
   for (const target of LAYER_NAMES) {

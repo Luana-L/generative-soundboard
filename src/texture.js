@@ -90,7 +90,17 @@ export class TextureLayer {
       this.oscs.push(osc);
     }
 
-    this.filter.connect(this.gain).connect(this.engine.master);
+    this.filter.connect(this.gain);
+    this.gain.connect(this.engine.master);
+    this.send = ctx.createGain();
+    this.send.gain.value = 0;
+    this.gain.connect(this.send);
+    this.send.connect(this.engine.fxInput);
+  }
+
+  setSend(v) {
+    if (!this.send) return;
+    this.send.gain.setTargetAtTime(v, this.engine.ctx.currentTime, 0.05);
   }
 
   setEnabled(on) {
