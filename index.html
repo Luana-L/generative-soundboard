@@ -71,6 +71,13 @@
             <input class="vol" type="range" min="0" max="1" step="0.01" value="0.5" />
           </label>
           <label>
+            mode
+            <select id="melody-mode">
+              <option value="walk" selected>random walk</option>
+              <option value="ca">cellular automaton (eno)</option>
+            </select>
+          </label>
+          <label>
             pitch class set
             <select id="pcset">
               <option value="0,2,4,7,9" selected>pentatonic</option>
@@ -139,6 +146,10 @@
         </div>
       </section>
     </main>
+
+    <section class="ca-history" id="ca-history" hidden>
+      <div class="ca-grid" id="ca-grid"></div>
+    </section>
 
     <footer class="status">
       <span id="status-text">click <em>start</em> to unlock audio</span>

@@ -89,7 +89,38 @@ engine.tickHandlers.add((step) => {
     const len = rhythm.tracks[v].pattern.length;
     el.innerHTML = formatPattern(rhythm.tracks[v].pattern, step % len);
   }
+  renderCaHistory(step);
 });
+
+function renderCaHistory(step) {
+  const section = document.querySelector("#ca-history");
+  const grid = document.querySelector("#ca-grid");
+  if (!section || !grid) return;
+  if (melody.mode !== "ca") {
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+  const hist = melody.caHistory;
+  const N = melody.caState.length;
+  const curStep = step % N;
+  const curBeat = Math.floor(curStep / 4);
+  const beatStartCell = curBeat * 4;
+  const lastIdx = hist.length - 1;
+  let html = "";
+  for (let i = 0; i < hist.length; i++) {
+    const row = hist[i];
+    const isCurrent = i === lastIdx;
+    html += `<div class="ca-row${isCurrent ? " current" : ""}">`;
+    for (let j = 0; j < row.length; j++) {
+      const alive = row[j] ? "on" : "off";
+      const now = isCurrent && j >= beatStartCell && j < beatStartCell + 4 ? " now" : "";
+      html += `<span class="ca-cell ${alive}${now}"></span>`;
+    }
+    html += "</div>";
+  }
+  grid.innerHTML = html;
+}
 
 // ---- Layer toggles ----
 $$(".toggle").forEach((btn) => {
@@ -132,6 +163,7 @@ function renderPattern(voice) {
 
 // Initial pattern render.
 for (const v of ["kick", "snare", "hat"]) renderPattern(v);
+renderCaHistory(0);
 
 // ---- Melody controls ----
 const pcsetSel = $("#pcset");
@@ -174,6 +206,7 @@ function applyMusicSettings() {
   melody.setDensity(parseFloat($("#density").value));
   melody.setFmIndex(parseFloat($("#fmindex").value));
   melody.setFmRatio(parseFloat($("#fmratio").value));
+  melody.setMode($("#melody-mode").value);
 
   texture.setBaseMidi(parseInt($("#tex-base").value, 10));
   texture.setHarmony(melody.getEffectivePcset());
@@ -188,6 +221,7 @@ function applyMusicSettings() {
 updateMusicBtn.addEventListener("click", () => {
   applyMusicSettings();
   clearPending();
+  renderCaHistory(0);
   statusText.innerHTML = engine.running
     ? "music updated — parameters applied"
     : "settings updated — press start to hear changes";

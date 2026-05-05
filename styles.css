@@ -194,6 +194,60 @@ input[type="range"] {
 .pattern .off { color: var(--ink-dim); }
 .pattern .now { color: var(--accent-2); font-weight: 700; }
 
+/* ---- Cellular Automata Visualization ---- */
+.ca-history {
+  padding: 16px 20px 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.ca-grid {
+  width: min(560px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ca-row {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 2px;
+}
+
+.ca-cell {
+  aspect-ratio: 1;
+  background: var(--panel-2);
+  border-radius: 2px;
+}
+
+.ca-cell.on {
+  background: var(--accent);
+}
+
+.ca-row.current .ca-cell {
+  outline: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.ca-row.current .ca-cell.on {
+  background: var(--accent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+/* Cells in the currently-playing quarter: empty cells get a pink outline,
+   alive (firing) cells get a pink fill with a stronger glow. */
+.ca-cell.now {
+  outline: 1.5px solid var(--accent-2);
+  outline-offset: -1px;
+}
+
+.ca-row.current .ca-cell.now.on {
+  background: var(--accent-2);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent-2) 80%, transparent);
+}
+
 .status {
   display: flex;
   align-items: center;

@@ -48,6 +48,15 @@ export class MelodyLayer {
     this.fmRatio = 2;       // modulator:carrier frequency ratio
     this.lastPitchIndex = 0;
     this.targetVolume = 0.5;
+
+    // Cellular-automaton mode: a 16-cell row has live cells that fire notes
+    // and pitch is drawn from the pool by cell index.
+    this.mode = "walk";     // "walk" | "ca"
+    this.caRule = 110;
+    this.caState = new Array(16).fill(0);
+    this.caHistory = [];
+    this.caHistoryMax = 4;
+    this.seedCa();
   }
 
   attach() {
@@ -79,6 +88,36 @@ export class MelodyLayer {
   setFmIndex(i)   { this.fmIndex = i; }
   setFmRatio(r)   { this.fmRatio = r; }
 
+  setMode(mode) {
+    this.mode = mode === "ca" ? "ca" : "walk";
+    if (this.mode === "ca") this.seedCa();
+  }
+
+  // Sparse random seed; ~25% of cells alive. Avoids the all-zero attractor.
+  seedCa() {
+    this.caState = new Array(16).fill(0).map(() => (Math.random() < 0.25 ? 1 : 0));
+    if (this.caState.every((x) => x === 0)) this.caState[Math.floor(Math.random() * 16)] = 1;
+    this.caHistory = [[...this.caState]];
+  }
+
+  stepCa() {
+    const N = this.caState.length;
+    const next = new Array(N).fill(0);
+    for (let i = 0; i < N; i++) {
+      const left   = this.caState[(i - 1 + N) % N];
+      const center = this.caState[i];
+      const right  = this.caState[(i + 1) % N];
+      const idx    = (left << 2) | (center << 1) | right;
+      next[i] = (this.caRule >> idx) & 1;
+    }
+    if (next.every((x) => x === 0) || next.every((x) => x === 1)) {
+      next[Math.floor(Math.random() * N)] ^= 1;
+    }
+    this.caState = next;
+    this.caHistory.push([...next]);
+    if (this.caHistory.length > this.caHistoryMax) this.caHistory.shift();
+  }
+
   recomputePool() {
     this.effectivePcset = this.computeEffectivePcset();
     this.pitchPool = expandPitches(this.effectivePcset, BASE_MIDI);
@@ -107,9 +146,32 @@ export class MelodyLayer {
 
   tick(step, time) {
     if (!this.enabled || !this.gain) return;
-    if (Math.random() > this.density) return;
 
-    // Vary note length: usually a 16th (one step), sometimes longer.
+    if (this.mode === "ca") {
+      const N = this.caState.length;
+      const pos = step % N;
+      // At the top of each bar, evolve the CA one generation.
+      if (pos === 0) this.stepCa();
+      // Fire chords on quarter-note boundaries: read 4 cells at a time and
+      // sound every alive cell as a simultaneous note from the pool.
+      if (step % 4 !== 0) return;
+
+      const pool = this.pitchPool;
+      if (pool.length === 0) return;
+      const beatSec = 60 / this.engine.bpm;
+      const dur = beatSec * 0.95;
+      const startCell = (Math.floor(pos / 4)) * 4;
+      for (let j = 0; j < 4; j++) {
+        const cellIdx = startCell + j;
+        if (!this.caState[cellIdx]) continue;
+        if (Math.random() > this.density) continue;
+        const pitch = pool[cellIdx % pool.length];
+        this.playFmVoice(midiToHz(pitch), time, dur);
+      }
+      return;
+    }
+
+    if (Math.random() > this.density) return;
     const stepDur = this.engine.stepDuration();
     const beats = Math.random() < 0.7 ? 1 : Math.random() < 0.5 ? 2 : 3;
     const dur = stepDur * beats * 0.95;
@@ -119,8 +181,8 @@ export class MelodyLayer {
     this.playFmVoice(midiToHz(midi), time, dur);
   }
 
-  // FM synthesis
-  playFmVoice(carrierHz, time, duration) {
+  // FM synthesis. `attack` controls fade-in time.
+  playFmVoice(carrierHz, time, duration, attack = 0.01) {
     const ctx = this.engine.ctx;
 
     const carrier = ctx.createOscillator();
@@ -133,14 +195,14 @@ export class MelodyLayer {
 
     const modIndex = ctx.createGain();
     modIndex.gain.setValueAtTime(0, time);
-    modIndex.gain.linearRampToValueAtTime(this.fmIndex, time + 0.01);
+    modIndex.gain.linearRampToValueAtTime(this.fmIndex, time + attack);
     modIndex.gain.exponentialRampToValueAtTime(Math.max(1, this.fmIndex * 0.2), time + duration);
 
     modulator.connect(modIndex).connect(carrier.frequency);
 
     const amp = ctx.createGain();
     amp.gain.setValueAtTime(0.0001, time);
-    amp.gain.exponentialRampToValueAtTime(0.5, time + 0.01);
+    amp.gain.exponentialRampToValueAtTime(0.5, time + attack);
     amp.gain.exponentialRampToValueAtTime(0.0001, time + duration);
 
     carrier.connect(amp).connect(this.gain);

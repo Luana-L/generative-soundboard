@@ -5,8 +5,17 @@ An interactive WebAudio "mini algorave" soundboard. Three generative layers — 
 ## Layers
 
 - **rhythm** — three drum voices (kick, snare, hat) driven by independent [Euclidean rhythms](https://louridas.github.io/rwa/assignments/musical-rhythms/) generated with Bjorklund's algorithm, so that k notes are evenly distributed over n time steps. Allows steps and pulses to be adjusted per voice; and pattern is recomputed live
-- **melody** — randomized melodic line drawn from a **pitch class set** under transposition and inversion. Each note is rendered with FM
-- **texture** — three detuned sawtooth oscillators through a lowpass filter whose cutoff is modulated by an LFO. Slow fades in/out
+- **melody** — two modes: a **random walk** through pitches drawn from a **pitch class set** under transposition and inversion, or **cellular automaton (eno)** — see below. Each note is rendered with FM synthesis
+- **texture** — three detuned sawtooth oscillators voiced as a chord snapped to the melody's effective pitch class set, routed through a lowpass filter whose cutoff is modulated by an LFO. Slow fades in/out
+
+## Brian Eno influence
+
+Brian eno frames generative composers as a *gardener* who plants conditions and lets the system unfold rather than dictating every note. A recurring technique: a tiny rule set, applied repeatedly, produces the output, never quite the same.
+
+Two pieces of this project lean on that idea:
+
+- **Melody → cellular automaton (eno) mode**: a 16-cell binary row evolves as a one-dimensional elementary CA similar to the one Eno cites when discussing Conway's Game of Life. Each step of the bar reads one cell: if alive, a note fires; the pitch is drawn from the active pcset by cell index.
+- **Texture as harmonic environment**: rather than letting the drone clash with the melody, `texture.setHarmony(pcset)` snaps its three voices to the melody's transposed/inverted pcset. This mimics Eno's habit of designing the environment and letting parts coexist rather than choreographing them.
 
 All three layers route through their own `GainNode`, then a master `GainNode`, then to `destination`.
 
@@ -30,3 +39,4 @@ src/main.js         DOM wiring
 - **Pitch class set theory** in `melody.js` — transposition and inversion operations on pitch class sets
 - A lookahead scheduler in `audio-engine.js` (`scheduler()` + `setInterval` clock) that schedules events
 - **Bjorklund's algorithm** for Euclidean rhythms in `rhythm.js` — distributes `k` pulses as evenly as possible across `n` steps by iteratively merging remainder groups into front groups.
+- **Cellular Automata** in `melody.js` — a 16-cell row evolves one generation per bar to produce constantly mutating melodic patterns.
