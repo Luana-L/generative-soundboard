@@ -80,9 +80,18 @@ export class MelodyLayer {
   setFmRatio(r)   { this.fmRatio = r; }
 
   recomputePool() {
+    this.effectivePcset = this.computeEffectivePcset();
+    this.pitchPool = expandPitches(this.effectivePcset, BASE_MIDI);
+  }
+
+  computeEffectivePcset() {
     let s = transpose(this.pcset, this.tn);
     if (this.invertOn) s = invert(s, this.tn);
-    this.pitchPool = expandPitches(s, BASE_MIDI);
+    return s;
+  }
+
+  getEffectivePcset() {
+    return this.effectivePcset ?? this.computeEffectivePcset();
   }
 
   // Random walk through the pitch pool

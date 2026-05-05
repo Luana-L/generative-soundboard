@@ -1,8 +1,38 @@
-// Texture layer: a drone made of three sawtooth oscillators
-// summed and routed through a lowpass filter whose cutoff is modulated by an
-// LFO. The whole thing fades in/out smoothly.
+// Texture layer: a drone made of three sawtooth oscillators voiced as a chord
+// snapped to the melody's pitch class set. Routed through a lowpass filter
+// whose cutoff is modulated by an LFO. Fades in/out smoothly.
 
 const midiToHz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+
+// Snap baseMidi up to the nearest pitch in the pcset, then stack two more
+// voices roughly a fifth and an octave-plus-third above, also snapped to the
+// pcset. Yields a triadic drone that always shares pitches with the melody.
+function harmonizedPitches(baseMidi, pcset) {
+  if (!pcset || pcset.length === 0) {
+    return [baseMidi, baseMidi + 7, baseMidi + 16];
+  }
+  const sorted = [...new Set(pcset.map((p) => ((p % 12) + 12) % 12))].sort((a, b) => a - b);
+  const baseOct = Math.floor(baseMidi / 12) * 12;
+
+  const allCandidates = [];
+  for (let oct = 0; oct <= 3; oct++) {
+    for (const pc of sorted) allCandidates.push(baseOct + oct * 12 + pc);
+  }
+
+  const root = allCandidates.find((m) => m >= baseMidi) ?? allCandidates[0];
+  const snapAbove = (above, targetSemis) => {
+    const target = above + targetSemis;
+    let best = null, bestDist = Infinity;
+    for (const m of allCandidates) {
+      if (m <= above) continue;
+      const d = Math.abs(m - target);
+      if (d < bestDist) { bestDist = d; best = m; }
+    }
+    return best ?? above + targetSemis;
+  };
+
+  return [root, snapAbove(root, 7), snapAbove(root, 16)];
+}
 
 export class TextureLayer {
   constructor(engine) {
@@ -22,6 +52,8 @@ export class TextureLayer {
     this.cutoff = 900;
     this.lfoRate = 0.15;
     this.lfoDepthHz = 1200;
+    this.harmony = [0, 2, 4, 7, 9];
+    this.voicePitches = harmonizedPitches(this.baseMidi, this.harmony);
   }
 
   attach() {
@@ -46,13 +78,13 @@ export class TextureLayer {
     this.lfo.connect(this.lfoDepth).connect(this.filter.frequency);
     this.lfo.start();
 
+    this.voicePitches = harmonizedPitches(this.baseMidi, this.harmony);
     const detunes = [-this.spread, 0, this.spread];
-    const baseHz = midiToHz(this.baseMidi);
-    for (const d of detunes) {
+    for (let i = 0; i < 3; i++) {
       const osc = ctx.createOscillator();
       osc.type = "sawtooth";
-      osc.frequency.value = baseHz;
-      osc.detune.value = d;
+      osc.frequency.value = midiToHz(this.voicePitches[i]);
+      osc.detune.value = detunes[i];
       osc.connect(this.filter);
       osc.start();
       this.oscs.push(osc);
@@ -94,10 +126,20 @@ export class TextureLayer {
 
   setBaseMidi(m) {
     this.baseMidi = m;
-    const baseHz = midiToHz(m);
+    this.applyVoicePitches();
+  }
+
+  setHarmony(pcset) {
+    this.harmony = pcset && pcset.length ? pcset : this.harmony;
+    this.applyVoicePitches();
+  }
+
+  applyVoicePitches() {
+    this.voicePitches = harmonizedPitches(this.baseMidi, this.harmony);
+    if (this.oscs.length !== 3) return;
     const t = this.engine.ctx.currentTime;
-    for (const osc of this.oscs) {
-      osc.frequency.setTargetAtTime(baseHz, t, 0.1);
+    for (let i = 0; i < 3; i++) {
+      this.oscs[i].frequency.setTargetAtTime(midiToHz(this.voicePitches[i]), t, 0.15);
     }
   }
 

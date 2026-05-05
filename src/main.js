@@ -176,6 +176,7 @@ function applyMusicSettings() {
   melody.setFmRatio(parseFloat($("#fmratio").value));
 
   texture.setBaseMidi(parseInt($("#tex-base").value, 10));
+  texture.setHarmony(melody.getEffectivePcset());
   texture.setSpread(parseFloat($("#tex-spread").value));
   texture.setCutoff(parseFloat($("#tex-cutoff").value));
   texture.setLfoRate(parseFloat($("#tex-lforate").value));
