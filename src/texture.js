@@ -8,7 +8,8 @@ export class TextureLayer {
   constructor(engine) {
     this.engine = engine;
     this.enabled = false;
-    this.targetVolume = 0.4;
+    this.targetVolume = 0.15;
+    this.outputTrim = 0.35;
 
     this.gain = null;
     this.filter = null;
@@ -63,7 +64,7 @@ export class TextureLayer {
   setEnabled(on) {
     this.enabled = on;
     if (!this.gain) return;
-    const target = on ? this.targetVolume : 0;
+    const target = on ? this.targetVolume * this.outputTrim : 0;
     this.gain.gain.setTargetAtTime(target, this.engine.ctx.currentTime, 0.4);
   }
 
@@ -77,7 +78,7 @@ export class TextureLayer {
 
   resume() {
     if (!this.gain) return;
-    const target = this.enabled ? this.targetVolume : 0;
+    const target = this.enabled ? this.targetVolume * this.outputTrim : 0;
     const t = this.engine.ctx.currentTime;
     this.gain.gain.cancelScheduledValues(t);
     this.gain.gain.setValueAtTime(this.gain.gain.value, t);
@@ -87,7 +88,7 @@ export class TextureLayer {
   setVolume(v) {
     this.targetVolume = v;
     if (this.enabled && this.gain) {
-      this.gain.gain.setTargetAtTime(v, this.engine.ctx.currentTime, 0.1);
+      this.gain.gain.setTargetAtTime(v * this.outputTrim, this.engine.ctx.currentTime, 0.1);
     }
   }
 

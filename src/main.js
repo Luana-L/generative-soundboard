@@ -29,7 +29,6 @@ function startEverything() {
   if (!rhythm.gain)  rhythm.attach();
   if (!melody.gain)  melody.attach();
   if (!texture.gain) texture.attach();
-  texture.resume();
   rhythm.onPatternChange = (voice) => renderPattern(voice);
   for (const v of ["kick", "snare", "hat"]) renderPattern(v);
   startBtn.textContent = "stop";
@@ -98,10 +97,28 @@ $$(".toggle").forEach((btn) => {
     const target = btn.dataset.target;
     const next = btn.getAttribute("aria-pressed") !== "true";
     setToggle(target, next, { apply: false });
-    statusText.innerHTML = engine.running
-      ? "changes pending — click update music"
-      : "changes pending — press start, then update music";
+    markPending();
   });
+});
+
+// ---- Pending-change indicator ----
+function markPending() {
+  document.body.classList.add("pending");
+  updateMusicBtn.classList.add("pending");
+  statusText.innerHTML = engine.running
+    ? "changes pending — click <em>update music</em>"
+    : "changes pending — press <em>start</em>, then <em>update music</em>";
+}
+
+function clearPending() {
+  document.body.classList.remove("pending");
+  updateMusicBtn.classList.remove("pending");
+}
+
+// Any input in the board or transport (other than the start button) flags pending.
+$$(".board input, .board select, .transport input").forEach((el) => {
+  el.addEventListener("input", markPending);
+  el.addEventListener("change", markPending);
 });
 
 // Per-layer volume sliders are staged until "update music".
@@ -169,9 +186,11 @@ function applyMusicSettings() {
 
 updateMusicBtn.addEventListener("click", () => {
   applyMusicSettings();
+  clearPending();
   statusText.innerHTML = engine.running
     ? "music updated — parameters applied"
     : "settings updated — press start to hear changes";
 });
 
 applyMusicSettings();
+clearPending();
