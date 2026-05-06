@@ -23,6 +23,19 @@
       </div>
     </header>
 
+    <div class="app-layout">
+      <aside class="tune-sidebar" id="snapshots">
+        <h3>tune pages</h3>
+        <button class="tune-tab active" data-slot="0">page 1</button>
+        <button class="tune-tab" data-slot="1">page 2</button>
+        <button class="tune-tab" data-slot="2">page 3</button>
+        <button id="tune-save" type="button">save current page</button>
+        <button id="tune-play-seq" type="button">play sequence</button>
+        <button id="tune-play-together" type="button">play together</button>
+        <p id="tune-save-note">save all 3 pages to unlock play modes (0/3 saved)</p>
+        <p id="tune-status">editing page 1</p>
+      </aside>
+      <div class="workspace">
     <main class="board">
       <!-- Rhythm -->
       <section class="layer" data-layer="rhythm">
@@ -179,6 +192,8 @@
       <span id="status-text">click <em>start</em> to unlock audio</span>
       <span class="beat" id="beat-led"></span>
     </footer>
+      </div>
+    </div>
 
     <script type="module" src="src/main.js"></script>
   </body>

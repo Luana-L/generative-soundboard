@@ -67,6 +67,12 @@ button {
 
 button:hover { border-color: var(--accent); }
 
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: saturate(0.6);
+}
+
 button.primary {
   background: var(--accent);
   color: #0b0b10;
@@ -255,6 +261,68 @@ input[type="range"] {
 .ca-row.current .ca-cell.now.on {
   background: var(--accent-2);
   box-shadow: 0 0 10px color-mix(in srgb, var(--accent-2) 80%, transparent);
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - 60px);
+}
+
+.tune-sidebar {
+  border-right: 1px solid var(--line);
+  padding: 16px 12px;
+  background: #12121a;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tune-sidebar h3 {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.tune-tab {
+  text-align: left;
+  width: 100%;
+}
+
+.tune-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b0b10;
+  font-weight: 700;
+}
+
+.workspace {
+  min-width: 0;
+}
+
+#tune-status {
+  margin: 2px 0 0;
+  color: var(--ink-dim);
+  font-size: 12px;
+}
+
+#tune-save-note {
+  margin: 2px 0 0;
+  color: var(--warn);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tune-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
 }
 
 .status {
