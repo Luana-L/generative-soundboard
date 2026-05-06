@@ -204,6 +204,10 @@ input[type="range"] {
   align-items: center;
 }
 
+.ca-history[hidden] {
+  display: none;
+}
+
 .ca-grid {
   width: min(560px, 100%);
   display: flex;

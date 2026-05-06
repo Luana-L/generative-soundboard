@@ -96,7 +96,7 @@ function renderCaHistory(step) {
   const section = document.querySelector("#ca-history");
   const grid = document.querySelector("#ca-grid");
   if (!section || !grid) return;
-  if (melody.mode !== "ca") {
+  if (melody.mode !== "ca" || !melody.enabled) {
     section.hidden = true;
     return;
   }
