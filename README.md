@@ -53,5 +53,5 @@ Built by **Luana Liao** and **Minseul Kim**. Much of the project was pair-progra
 
 - Inspired by [strudel.cc](https://strudel.cc/) — the in-browser live-coding environment that made us want to try this from scratch.
 - Euclidean rhythms / Bjorklund's algorithm learned from [Panos Louridas — Real World Algorithms: Musical Rhythms](https://louridas.github.io/rwa/assignments/musical-rhythms/).
-- Generative-music framing (the "gardener" idea, cellular automata as composition) drawn from Brian Eno's talks and writing.
-- Thanks to our professor **Mark Santolucito**.
+- Generative-music framing (the "gardener" idea, cellular automata as composition) drawn from Brian Eno's ideas.
+- A big thanks to our professor **Mark Santolucito**!!!
