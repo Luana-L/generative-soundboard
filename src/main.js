@@ -167,14 +167,24 @@ renderCaHistory(0);
 
 // ---- Melody controls ----
 const pcsetSel = $("#pcset");
+const melodyOrderSel = $("#melody-order");
+const melodySpeedRange = $("#melody-speed");
+const melodySpeedVal = $("#melody-speed-val");
 const tnRange  = $("#tn");
 const tnVal    = $("#tn-val");
 const invertCb = $("#invert");
+const densityRange = $("#density");
 
 tnRange.addEventListener("input", () => {
   const n = parseInt(tnRange.value, 10);
   tnVal.textContent = n;
 });
+
+function getMelodyDensityValue() {
+  const base = parseFloat(densityRange.value);
+  const speed = parseFloat(melodySpeedRange?.value ?? "1");
+  return Math.min(1, base * speed);
+}
 
 function applyMusicSettings() {
   engine.setBpm(parseFloat($("#bpm").value));
@@ -203,9 +213,10 @@ function applyMusicSettings() {
   }
 
   melody.setPcset(pcsetSel.value.split(",").map(Number));
+  melody.setOrderMode(melodyOrderSel.value);
   melody.setTn(parseInt(tnRange.value, 10));
   melody.setInvert(invertCb.checked);
-  melody.setDensity(parseFloat($("#density").value));
+  melody.setDensity(getMelodyDensityValue());
   melody.setFmIndex(parseFloat($("#fmindex").value));
   melody.setFmRatio(parseFloat($("#fmratio").value));
   melody.setMode($("#melody-mode").value);
@@ -219,6 +230,15 @@ function applyMusicSettings() {
 
   if (engine.running && allTogglesOff()) stopEverything();
 }
+
+melodySpeedRange?.addEventListener("input", () => {
+  const speed = parseFloat(melodySpeedRange.value);
+  if (melodySpeedVal) melodySpeedVal.textContent = `${speed.toFixed(2)}x`;
+  const density = getMelodyDensityValue();
+  melody.setDensity(density);
+  statusText.innerHTML = `melody speed ${speed.toFixed(2)}x (density ${density.toFixed(2)})`;
+  markPending();
+});
 
 updateMusicBtn.addEventListener("click", () => {
   applyMusicSettings();

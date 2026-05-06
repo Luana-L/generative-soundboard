@@ -97,6 +97,13 @@
             </select>
           </label>
           <label>
+            play order
+            <select id="melody-order">
+              <option value="walk" selected>random walk</option>
+              <option value="seq">set order</option>
+            </select>
+          </label>
+          <label>
             transpose Tn
             <input id="tn" type="range" min="0" max="11" step="1" value="0" />
             <span id="tn-val">0</span>
@@ -116,6 +123,11 @@
           <label>
             FM ratio
             <input id="fmratio" type="range" min="0.25" max="6" step="0.25" value="2" />
+          </label>
+          <label>
+            melody speed
+            <input id="melody-speed" type="range" min="1" max="2" step="0.05" value="1" />
+            <span id="melody-speed-val">1.00x</span>
           </label>
         </div>
       </section>

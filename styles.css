@@ -79,6 +79,11 @@ button.primary.running {
   border-color: var(--accent-2);
 }
 
+button.inline-action {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--accent) 20%, var(--panel-2));
+}
+
 input[type="number"], select {
   background: var(--bg);
   color: var(--ink);

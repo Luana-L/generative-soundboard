@@ -48,6 +48,8 @@ export class MelodyLayer {
     this.fmRatio = 2;       // modulator:carrier frequency ratio
     this.lastPitchIndex = 0;
     this.targetVolume = 0.5;
+    this.orderMode = "walk"; // "walk" | "seq"
+    this.sequenceIndex = 0;
 
     // Cellular-automaton mode: a 16-cell row has live cells that fire notes
     // and pitch is drawn from the pool by cell index.
@@ -91,6 +93,10 @@ export class MelodyLayer {
   }
 
   setPcset(pcset) { this.pcset = pcset; this.recomputePool(); }
+  setOrderMode(mode) {
+    this.orderMode = mode === "seq" ? "seq" : "walk";
+    this.sequenceIndex = 0;
+  }
   setTn(n)        { this.tn = n;        this.recomputePool(); }
   setInvert(on)   { this.invertOn = on; this.recomputePool(); }
   setDensity(d)   { this.density = d; }
@@ -153,6 +159,15 @@ export class MelodyLayer {
     return pool[this.lastPitchIndex];
   }
 
+  pickNextSequentialPitch() {
+    const orderedPcset = this.getEffectivePcset();
+    if (!orderedPcset.length) return null;
+
+    const pc = orderedPcset[this.sequenceIndex % orderedPcset.length];
+    this.sequenceIndex = (this.sequenceIndex + 1) % 1024;
+    return BASE_MIDI + pc;
+  }
+
   tick(step, time) {
     if (!this.enabled || !this.gain) return;
 
@@ -182,7 +197,9 @@ export class MelodyLayer {
     const beats = Math.random() < 0.7 ? 1 : Math.random() < 0.5 ? 2 : 3;
     const dur = stepDur * beats * 0.95;
 
-    const midi = this.pickNextPitch();
+    const midi = this.orderMode === "seq"
+      ? this.pickNextSequentialPitch()
+      : this.pickNextPitch();
     if (midi == null) return;
     this.playFmVoice(midiToHz(midi), time, dur);
   }
