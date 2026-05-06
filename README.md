@@ -3,6 +3,7 @@
 An interactive WebAudio "mini algorave" soundboard. Three generative layers — rhythm, melody, texture — run on a shared transport and can be toggled, mixed, and reshaped live. Loosely inspired by [strudel.cc](https://strudel.cc/), but built from scratch on the raw WebAudio API.
 
 🔊 **Live demo:** [luana-l.github.io/generative-soundboard](https://luana-l.github.io/generative-soundboard/)
+
 📝 **Write-up:** [luana-l.github.io/generative-soundboard/blog.html](https://luana-l.github.io/generative-soundboard/blog.html)
 
 ## Layers
