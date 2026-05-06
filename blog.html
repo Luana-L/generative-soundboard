@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>generative soundboard — write-up</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .post {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 32px 24px 80px;
+      }
+
+      .post-head {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 18px;
+        margin-bottom: 28px;
+      }
+
+      .post-head .kicker {
+        color: var(--ink-dim);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .post-head h1 {
+        margin: 6px 0 4px;
+        font-size: 22px;
+        color: var(--accent);
+        text-transform: lowercase;
+        letter-spacing: 0.06em;
+      }
+
+      .post-head .byline {
+        color: var(--ink-dim);
+        font-size: 13px;
+      }
+
+      .post-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .post-nav a {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 13px;
+      }
+
+      .post-nav a:hover { text-decoration: underline; }
+
+      .post section {
+        margin: 32px 0;
+      }
+
+      .post h2 {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--accent);
+        border-left: 2px solid var(--accent);
+        padding-left: 10px;
+        margin: 0 0 14px;
+      }
+
+      .post h3 {
+        font-size: 13px;
+        color: var(--accent-2);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin: 22px 0 8px;
+      }
+
+      .post p {
+        color: var(--ink);
+        margin: 10px 0;
+      }
+
+      .post ul {
+        padding-left: 18px;
+        color: var(--ink);
+      }
+
+      .post li {
+        margin: 6px 0;
+      }
+
+      .post code {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        padding: 1px 5px;
+        font-size: 12px;
+        color: var(--accent);
+      }
+
+      .post a {
+        color: var(--accent);
+        text-decoration: none;
+        border-bottom: 1px dotted color-mix(in srgb, var(--accent) 50%, transparent);
+        transition: color 120ms ease, border-color 120ms ease;
+      }
+
+      .post a:hover {
+        color: var(--accent-2);
+        border-bottom-color: var(--accent-2);
+      }
+
+      .post a:visited {
+        color: var(--accent);
+      }
+
+      figure.screenshot {
+        margin: 24px 0;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--panel-2);
+      }
+
+      figure.screenshot img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      figure.screenshot figcaption {
+        padding: 8px 12px;
+        color: var(--ink-dim);
+        font-size: 12px;
+        border-top: 1px solid var(--line);
+      }
+
+      .layer-block {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 14px 16px;
+        margin: 12px 0;
+      }
+
+      .layer-block h3 {
+        margin-top: 0;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 8px 0 12px;
+      }
+
+      .tag {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--ink-dim);
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        padding: 2px 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="post-nav">
+      <a href="index.html">&larr; back to soundboard</a>
+      <span class="kicker" style="color: var(--ink-dim); font-size: 12px;">write-up</span>
+    </nav>
+
+    <article class="post">
+      <header class="post-head">
+        <div class="kicker">project write-up</div>
+        <h1>generative soundboard</h1>
+        <div class="byline">
+          by minseul kim &amp; luana liao
+        </div>
+      </header>
+
+      <figure class="screenshot">
+        <img src="board.png" alt="screenshot of the generative soundboard interface" />
+        <figcaption>the live soundboard interface — three layers, shared transport, tune pages on the left</figcaption>
+      </figure>
+
+      <section>
+        <h2>1. Inspiration</h2>
+        <p>
+          What we wanted to build and why — a mini algorave in the browser, no
+          sample packs, every sound synthesized live, every parameter a knob you
+          can turn while the music plays. Mention strudel.cc as a touchstone and
+          Brian Eno's "gardener" framing of generative music.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. Constraints</h2>
+        <p>
+          What we deliberately limited ourselves to, and what limited us:
+        </p>
+        <ul>
+          <li>Raw WebAudio API only — no audio libraries, no sample files.</li>
+          <li>Musical coherence — three independent layers should agree harmonically without explicit choreography.</li>
+          <li>Browser timing — JavaScript main-thread jitter would destroy rhythm without a lookahead scheduler.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. Architecture</h2>
+        <p>
+          One <code>AudioContext</code>, one master gain, one clock. Each layer
+          is a class that subscribes to a per-step tick callback. Walk through:
+        </p>
+        <ul>
+          <li>Shared <code>AudioContext</code> + master bus + reverb send</li>
+          <li>Lookahead scheduler — wake every 25 ms, queue events 100 ms ahead on WebAudio's sample-accurate clock</li>
+          <li>Per-layer <code>RhythmLayer</code> / <code>MelodyLayer</code> / <code>TextureLayer</code> classes, each with their own <code>GainNode</code> and reverb control</li>
+          <li>Routing diagram: layer → gain → (master | reverb) → destination.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>4. Layer design</h2>
+
+        <div class="layer-block">
+          <h3>rhythm</h3>
+          <div class="tag-row">
+            <span class="tag">euclidean</span>
+            <span class="tag">bjorklund</span>
+            <span class="tag">synthesized drums</span>
+          </div>
+          <p>
+            Three drum voices — kick, snare, hat — synthesized from oscillators
+            and filtered noise. Each voice has its own Euclidean pattern
+            generated by Bjorklund's algorithm: distribute <code>k</code> pulses
+            as evenly as possible across <code>n</code> steps. Patterns recompute
+            live as the user drags sliders.
+          </p>
+        </div>
+
+        <div class="layer-block">
+          <h3>melody</h3>
+          <div class="tag-row">
+            <span class="tag">pitch class sets</span>
+            <span class="tag">random walk</span>
+            <span class="tag">cellular automaton</span>
+            <span class="tag">FM synthesis</span>
+          </div>
+          <p>
+            A pitch class set is the harmonic backbone — transposition and
+            inversion mod 12 give us the active pitch pool. Two playback modes:
+            a <em>random walk</em> through the pool, or a 16-cell elementary
+            cellular automaton that evolves one generation per bar and fires
+            notes from live cells. Every note is rendered with a small FM
+            voice — sine modulating sine, modulation index decays over the note.
+          </p>
+        </div>
+
+        <div class="layer-block">
+          <h3>texture</h3>
+          <div class="tag-row">
+            <span class="tag">detuned saw drone</span>
+            <span class="tag">LFO filter</span>
+            <span class="tag">harmony snapping</span>
+          </div>
+          <p>
+            Three sawtooth oscillators, slightly detuned, routed through a
+            low-pass filter whose cutoff is modulated by a slow LFO. The drone's
+            three voices snap to the melody's active pitch class set via
+            <code>texture.setHarmony(pcset)</code>, so the layers can't help but
+            agree harmonically.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>5. UI &amp; performance features</h2>
+        <ul>
+          <li><strong>Staging updates</strong> — parameter changes are queued and applied on the next bar boundary so playback stays musical.</li>
+          <li><strong>Pending state</strong> — the "update music" button glows when there are unsubmitted changes; the status bar warns the user.</li>
+          <li><strong>3-page tune sidebar</strong> — save up to three full-board snapshots and switch between them.</li>
+          <li><strong>Sequence vs. together modes</strong> — once all three pages are saved, play them in series (one per bar) or stacked simultaneously.</li>
+          <li><strong>CA visualization</strong> — when melody is in CA mode, recent generations of the cellular automaton render below the board, with the current step highlighted.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>6. Results &amp; future work</h2>
+
+        <h3>What sounds good now</h3>
+        <ul>
+          <li>Harmony snapping helps to keep the drone and melody in agreement</li>
+          <li>CA-driven melody produces patterns that feel less random</li>
+          <li>Lookahead scheduler keeps timing tight even with the page tabbed in/out.</li>
+        </ul>
+
+        <h3>What we'd improve next</h3>
+        <ul>
+          <li>Per-step probability or velocity envelopes for the drum voices.</li>
+          <li>More CA rules / 2D CA / multiple readouts from the same automaton.</li>
+          <li>A proper effects chain — delay, stereo widener, sidechain duck on the kick.</li>
+          <li>Export — record a session to WAV from the master bus.</li>
+          <li>MIDI-in so external controllers can drive the knobs.</li>
+        </ul>
+      </section>
+
+      <footer class="post-head" style="border-bottom: 0; border-top: 1px solid var(--line); padding: 18px 0 0; margin: 40px 0 0;">
+        <h3 style="margin-top: 0;">links &amp; credits</h3>
+        <ul>
+          <li>
+            repo:
+            <a href="https://github.com/Luana-L/generative-soundboard" target="_blank" rel="noopener">github.com/Luana-L/generative-soundboard</a>
+          </li>
+          <li>
+            euclidean rhythms / Bjorklund's algorithm learned from
+            <a href="https://louridas.github.io/rwa/assignments/musical-rhythms/" target="_blank" rel="noopener">Panos Louridas — Real World Algorithms: Musical Rhythms</a>
+          </li>
+          <li>
+            inspired by
+            <a href="https://strudel.cc/" target="_blank" rel="noopener">strudel.cc</a>
+          </li>
+          <li>
+            big thanks to our professor <strong>Mark Santolucito</strong>!!!!
+          </li>
+        </ul>
+      </footer>
+    </article>
+  </body>
+</html>

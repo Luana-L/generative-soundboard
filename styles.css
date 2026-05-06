@@ -37,6 +37,28 @@ html, body {
   color: var(--accent);
 }
 
+.title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.credits {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: 0.04em;
+}
+
+.credits a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.credits a:hover {
+  text-decoration: underline;
+}
+
 .transport {
   display: flex;
   gap: 14px;

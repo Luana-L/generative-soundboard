@@ -40,3 +40,14 @@ src/main.js         DOM wiring
 - A lookahead scheduler in `audio-engine.js` (`scheduler()` + `setInterval` clock) that schedules events
 - **Bjorklund's algorithm** for Euclidean rhythms in `rhythm.js` — distributes `k` pulses as evenly as possible across `n` steps by iteratively merging remainder groups into front groups.
 - **Cellular Automata** in `melody.js` — a 16-cell row evolves one generation per bar to produce constantly mutating melodic patterns.
+
+## Authors
+
+Built by **Luana Liao** and **Minseul Kim**. Much of the project was pair-programmed — sketching the audio graph, debugging timing, and shaping the UI together — with each of us also taking lead on individual layers and features.
+
+## Credits
+
+- Inspired by [strudel.cc](https://strudel.cc/) — the in-browser live-coding environment that made us want to try this from scratch.
+- Euclidean rhythms / Bjorklund's algorithm learned from [Panos Louridas — Real World Algorithms: Musical Rhythms](https://louridas.github.io/rwa/assignments/musical-rhythms/).
+- Generative-music framing (the "gardener" idea, cellular automata as composition) drawn from Brian Eno's talks and writing.
+- Thanks to our professor **Mark Santolucito**.
