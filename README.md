@@ -2,6 +2,9 @@
 
 An interactive WebAudio "mini algorave" soundboard. Three generative layers — rhythm, melody, texture — run on a shared transport and can be toggled, mixed, and reshaped live. Loosely inspired by [strudel.cc](https://strudel.cc/), but built from scratch on the raw WebAudio API.
 
+🔊 **Live demo:** [luana-l.github.io/generative-soundboard](https://luana-l.github.io/generative-soundboard/)
+📝 **Write-up:** [luana-l.github.io/generative-soundboard/blog.html](https://luana-l.github.io/generative-soundboard/blog.html)
+
 ## Layers
 
 - **rhythm** — three drum voices (kick, snare, hat) driven by independent [Euclidean rhythms](https://louridas.github.io/rwa/assignments/musical-rhythms/) generated with Bjorklund's algorithm, so that k notes are evenly distributed over n time steps. Allows steps and pulses to be adjusted per voice; and pattern is recomputed live
